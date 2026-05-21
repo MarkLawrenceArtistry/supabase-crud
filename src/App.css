@@ -1,0 +1,105 @@
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.content {
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.content > * {
+    border: 1px solid #171717;
+    border-radius: 5px;
+    padding: 20px;
+}
+
+.task-item {
+    border: 1px solid #171717;
+    margin: 5px;
+    padding: 5px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.tasks-table-wrapper {
+    margin-top: 15px;
+    overflow-y: auto;
+    height: 500px;
+}
+
+.tasks-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.tasks-table th, 
+.tasks-table td {
+    padding: 12px 10px;
+}
+
+.tasks-table th {
+    background-color: #f6f7f9;
+    color: #171717;
+    font-weight: 600;
+    border-bottom: 2px solid #bdbcbc;
+}
+
+.tasks-table td {
+    color: #171717;
+    border-bottom: 1px solid #e2e4e6;
+}
+
+.tasks-table tbody tr:hover {
+    background-color: #fcfdfe;
+}
+
+.tasks-table-empty {
+    text-align: center;
+    color: #767676;
+    padding: 20px !important;
+}
+
+/* Table Action Buttons */
+.table-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.table-actions button {
+    padding: 5px 10px;
+    border-radius: 3px;
+    border: 1px solid #bdbcbc;
+    background-color: white;
+    color: #171717;
+    cursor: pointer;
+    transition: all ease 0.3s;
+}
+
+.table-actions button:hover {
+    background-color: #f4f4f4;
+}
+
+.table-actions .btn-delete:hover {
+    background-color: #171717;
+    color: white;
+    border-color: #171717;
+}
