@@ -8,7 +8,7 @@ const table = "tasks"
 // USING (true);
 export const getTasks = async (supabaseInstance, stateFunction) => {
     const supabase = supabaseInstance
-    const { data, error } = await supabase.from(table).select().throwOnError();
+    const { data, error } = await supabase.from(table).select().order('created_at', { ascending: false });
 
     if (error) {
         console.error(error);
@@ -24,7 +24,7 @@ export const getTask = async (taskID, supabaseInstance) => {
         return
     }
     const supabase = supabaseInstance
-    const { data, error } = await supabase.from(table).select().eq("id", taskID).throwOnError();
+    const { data, error } = await supabase.from(table).select().eq("id", taskID).limit(1).single()
 
     if (error) {
         console.error(error);

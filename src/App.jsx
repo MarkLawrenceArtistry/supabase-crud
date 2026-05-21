@@ -87,7 +87,6 @@ function App() {
             // 4. update yung state kung "editing" state, IF OO ang task service function call `updatetask()` if not `createtask()`
 
             let taskResponse = await getTask(taskID, supabase)
-            taskResponse = taskResponse[0]
             if(taskResponse) {
                 setTaskData({name: taskResponse.name, description: taskResponse.description, is_finished: taskResponse.is_finished})
                 setCurrentTaskID(taskID)
