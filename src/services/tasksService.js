@@ -118,3 +118,40 @@ export const searchTask = async (taskName, supabaseInstance) => {
     console.log(data)
     return data
 }
+
+
+export const register = async (credentials, supabaseInstance) => {
+    if(!supabaseInstance) {
+        console.error('Supabase instance is missing.')
+        return
+    }
+
+    const supabase = supabaseInstance
+    const { data, error } = await supabase.auth.signUp(credentials)
+
+    if (error) {
+        console.error(error);
+        return;
+    }
+
+    console.log(data)
+    return data
+}
+
+export const login = async (credentials, supabaseInstance) => {
+    if(!supabaseInstance) {
+        console.error('Supabase instance is missing.')
+        return
+    }
+
+    const supabase = supabaseInstance
+    const { data, error } = await supabase.auth.signInWithPassword(credentials)
+
+    if (error) {
+        console.error(error);
+        return;
+    }
+
+    console.log(data)
+    return data
+}
