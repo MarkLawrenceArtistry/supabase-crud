@@ -161,7 +161,7 @@ function Dashboard() {
 
     const handleLogout = async (e) => {
         logout(supabase)
-        navigate('/login')
+        navigate('/')
     }
 
     const handleGetSession = async (e) => {
