@@ -7,8 +7,12 @@ import {
     getTask,
     updateTask,
     deleteTask,
-    searchTask    
+    searchTask,
+    logout,
+    getSession,
+    getUser
 } from "../services/tasksService";
+import { useNavigate } from "react-router-dom";
 
 import '../App.css'
 import { supabase } from "../services/supabase";
@@ -20,10 +24,20 @@ function Dashboard() {
     const [title, setTitle] = useState("Add New Task")
     const [currentTaskID, setCurrentTaskID] = useState(null)
     const [searchName, setSearchName] = useState('')
+    const [currentUser, setCurrentUser] = useState(null)
+
+    const navigate = useNavigate()
 
     useEffect(() => {
-        getTasks(supabase, setTasks);
-        // getTasksDescriptionOnly(supabase, setTasks)
+        const initialize = async () => {
+            await getTasks(supabase, setTasks);
+
+            const { email } = await getUser(supabase)
+            console.log(email)
+            setCurrentUser(email)
+        }
+
+        initialize()
     }, []);
 
     const handleSubmit = async (e) => {
@@ -145,10 +159,22 @@ function Dashboard() {
         }
     }
 
+    const handleLogout = async (e) => {
+        logout(supabase)
+        navigate('/login')
+    }
+
+    const handleGetSession = async (e) => {
+        const { session } = await getSession(supabase)
+        console.log(session)
+        alert(session.access_token)
+    }
+
 
     return (
         <div className="content">
             <div>
+                <h1>Hello, {currentUser} Welcome!</h1>
                 <h3>{title}</h3>
                 <form onSubmit={handleSubmit}>
                     <label>Task Name</label>
@@ -205,6 +231,11 @@ function Dashboard() {
                         )}
                     </tbody>
                 </table>
+            </div>
+
+            <div>
+                <button onClick={handleGetSession}>Get Session</button>
+                <button onClick={handleLogout}>Logout</button>
             </div>
         </div>
     );

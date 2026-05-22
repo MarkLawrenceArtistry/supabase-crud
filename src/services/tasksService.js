@@ -120,6 +120,13 @@ export const searchTask = async (taskName, supabaseInstance) => {
 }
 
 
+
+
+
+
+
+
+// AUTH
 export const register = async (credentials, supabaseInstance) => {
     if(!supabaseInstance) {
         console.error('Supabase instance is missing.')
@@ -154,4 +161,58 @@ export const login = async (credentials, supabaseInstance) => {
 
     console.log(data)
     return data
+}
+
+export const logout = async (supabaseInstance) => {
+    if(!supabaseInstance) {
+        console.error('Supabase instance is missing.')
+        return
+    }
+
+    const supabase = supabaseInstance
+    const { error } = await supabase.auth.signOut({ scope: 'local' })
+
+    if (error) {
+        console.error(error);
+        return;
+    }
+}
+
+export const getSession = async (supabaseInstance) => {
+    if(!supabaseInstance) {
+        console.error('Supabase instance is missing.')
+        return
+    }
+
+    const supabase = supabaseInstance
+    const { data, error } = await supabase.auth.getSession()
+
+    if (error) {
+        console.error(error);
+        return;
+    }
+
+    console.log(data)
+    return data
+}
+
+export const getUser = async (supabaseInstance) => {
+    if(!supabaseInstance) {
+        console.error('Supabase instance is missing.')
+        return
+    }
+
+    const supabase = supabaseInstance
+    const { data, error } = await supabase.auth.getUser()
+
+    if (error) {
+        console.error(error);
+        return;
+    }
+
+    console.log(data)
+    const { user } = data
+    console.log(user)
+
+    return user
 }
