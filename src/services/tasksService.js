@@ -1,4 +1,5 @@
 const table = "tasks"
+import { supabase } from '../services/supabase'
 
 // Need mo pa iconfigure supabase dito
 // CREATE POLICY "Allow public read-only access" 
@@ -6,8 +7,8 @@ const table = "tasks"
 // FOR SELECT 
 // TO anon 
 // USING (true);
-export const getTasks = async (supabaseInstance, stateFunction) => {
-    const supabase = supabaseInstance
+export const getTasks = async (stateFunction) => {
+    
     const { data, error } = await supabase.from(table).select().order('created_at', { ascending: false });
 
     if (error) {
@@ -18,12 +19,12 @@ export const getTasks = async (supabaseInstance, stateFunction) => {
     stateFunction(data);
 }
 
-export const getTask = async (taskID, supabaseInstance) => {
-    if(!taskID || !supabaseInstance) {
-        console.error('Task ID and/or Supabase instance is missing.')
+export const getTask = async (taskID) => {
+    if(!taskID) {
+        console.error('Task ID is missing.')
         return
     }
-    const supabase = supabaseInstance
+    
     const { data, error } = await supabase.from(table).select().eq("id", taskID).limit(1).single()
 
     if (error) {
@@ -40,8 +41,8 @@ export const getTask = async (taskID, supabaseInstance) => {
 // FOR INSERT
 // TO anon
 // WITH CHECK (true);
-export const addTask = async (taskData, supabaseInstance) => {
-    const supabase = supabaseInstance
+export const addTask = async (taskData) => {
+    
     const { data, error } = await supabase.from(table).insert(taskData).select().throwOnError();
 
     if (error) {
@@ -59,9 +60,9 @@ export const addTask = async (taskData, supabaseInstance) => {
 // TO anon 
 // USING (true)
 // WITH CHECK (true);
-export const updateTask = async (taskID, taskData, supabaseInstance) => {
+export const updateTask = async (taskID, taskData) => {
     console.log(taskData)
-    const supabase = supabaseInstance
+    
     const { data, error } = await supabase.from(table).update(taskData).eq('id', taskID).select()
 
     if (error) {
@@ -72,8 +73,8 @@ export const updateTask = async (taskID, taskData, supabaseInstance) => {
     return data
 }
 
-export const getTasksDescriptionOnly = async (supabaseInstance, stateFunction) => {
-    const supabase = supabaseInstance
+export const getTasksDescriptionOnly = async (stateFunction) => {
+    
 
     const { data, error } = await supabase.from(table).select('description').throwOnError()
 
@@ -85,12 +86,12 @@ export const getTasksDescriptionOnly = async (supabaseInstance, stateFunction) =
 // for delete
 // to anon
 // using ( true );
-export const deleteTask = async (taskID, supabaseInstance) => {
-    if(!taskID || !supabaseInstance) {
-        console.error('Task ID and/or Supabase instance is missing.')
+export const deleteTask = async (taskID) => {
+    if(!taskID) {
+        console.error('Task ID is missing.')
         return
     }
-    const supabase = supabaseInstance
+    
     const { data, error } = await supabase.from(table).delete().eq("id", taskID).select().throwOnError();
 
     if (error) {
@@ -101,13 +102,7 @@ export const deleteTask = async (taskID, supabaseInstance) => {
     return data
 }
 
-export const searchTask = async (taskName, supabaseInstance) => {
-    if(!supabaseInstance) {
-        console.error('Supabase instance is missing.')
-        return
-    }
-
-    const supabase = supabaseInstance
+export const searchTask = async (taskName) => {
     const { data, error } = await supabase.from(table).select().ilike('name', `%${taskName}%`)
 
     if (error) {
@@ -127,13 +122,7 @@ export const searchTask = async (taskName, supabaseInstance) => {
 
 
 // AUTH
-export const register = async (credentials, supabaseInstance) => {
-    if(!supabaseInstance) {
-        console.error('Supabase instance is missing.')
-        return
-    }
-
-    const supabase = supabaseInstance
+export const register = async (credentials) => { 
     const { data, error } = await supabase.auth.signUp(credentials)
 
     if (error) {
@@ -145,13 +134,8 @@ export const register = async (credentials, supabaseInstance) => {
     return data
 }
 
-export const login = async (credentials, supabaseInstance) => {
-    if(!supabaseInstance) {
-        console.error('Supabase instance is missing.')
-        return
-    }
+export const login = async (credentials) => {
 
-    const supabase = supabaseInstance
     const { data, error } = await supabase.auth.signInWithPassword(credentials)
 
     if (error) {
@@ -163,13 +147,8 @@ export const login = async (credentials, supabaseInstance) => {
     return data
 }
 
-export const logout = async (supabaseInstance) => {
-    if(!supabaseInstance) {
-        console.error('Supabase instance is missing.')
-        return
-    }
+export const logout = async () => {
 
-    const supabase = supabaseInstance
     const { error } = await supabase.auth.signOut({ scope: 'local' })
 
     if (error) {
@@ -178,13 +157,8 @@ export const logout = async (supabaseInstance) => {
     }
 }
 
-export const getSession = async (supabaseInstance) => {
-    if(!supabaseInstance) {
-        console.error('Supabase instance is missing.')
-        return
-    }
+export const getSession = async () => {
 
-    const supabase = supabaseInstance
     const { data, error } = await supabase.auth.getSession()
 
     if (error) {
@@ -196,13 +170,8 @@ export const getSession = async (supabaseInstance) => {
     return data
 }
 
-export const getUser = async (supabaseInstance) => {
-    if(!supabaseInstance) {
-        console.error('Supabase instance is missing.')
-        return
-    }
+export const getUser = async () => {
 
-    const supabase = supabaseInstance
     const { data, error } = await supabase.auth.getUser()
 
     if (error) {
@@ -215,4 +184,29 @@ export const getUser = async (supabaseInstance) => {
     console.log(user)
 
     return user
+}
+
+
+
+
+
+// FILE
+// simula dito ko dineclare yung const supabase sa taas
+export const uploadImage = async (file) => {
+    if(!file) return null
+
+    const fileExtension = file.name.split('.').pop()
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExtension}`
+    const filePath = `public/${fileName}`
+
+    const { error, uploadError } = await supabase.storage.from('task-images').upload(filePath, file)
+
+    if(uploadError) {
+        console.error(`Upload error: ${uploadError}`)
+        throw uploadError
+    }
+
+    const { data } = supabase.storage.from('task-images').getPublicUrl(filePath)
+
+    return data.publicUrl
 }

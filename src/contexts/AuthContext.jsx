@@ -23,7 +23,7 @@ export const AuthProvider = ({ children }) => {
         // })
 
         async function fetchSession() {
-            const { session } = await getSession(supabase)
+            const { session } = await getSession()
             if(session && session.user) {
                 setUser(session.user)
             } else {

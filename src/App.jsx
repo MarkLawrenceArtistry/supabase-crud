@@ -1,6 +1,5 @@
 import { Routes, Route, Link } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
-// import ProtectedRoute from "./components/ProtectedRoute";
 
 import Dashboard from './pages/Dashboard'
 import Register from './pages/Register'
@@ -31,21 +30,3 @@ function App() {
 }
 
 export default App
-
-{/* <AuthProvider>
-    <div>
-        <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/" element={<Register />} />
-
-            <Route path="/dashboard" element={
-                    <ProtectedRoute>
-                        <Dashboard />
-                    </ProtectedRoute>
-                }
-            />
-
-            <Route path="*" element={<NotFound />} />
-        </Routes>
-    </div>
-</AuthProvider> */}

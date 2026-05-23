@@ -10,7 +10,8 @@ import {
     searchTask,
     logout,
     getSession,
-    getUser
+    getUser,
+    uploadImage
 } from "../services/tasksService";
 import { useNavigate } from "react-router-dom";
 
@@ -25,14 +26,16 @@ function Dashboard() {
     const [currentTaskID, setCurrentTaskID] = useState(null)
     const [searchName, setSearchName] = useState('')
     const [currentUser, setCurrentUser] = useState(null)
+    const [imageFile, setImageFile] = useState(null)
+    const [isUploading, setIsUploading] = useState(false)
 
     const navigate = useNavigate()
 
     useEffect(() => {
         const initialize = async () => {
-            await getTasks(supabase, setTasks);
+            await getTasks(setTasks);
 
-            const { email } = await getUser(supabase)
+            const { email } = await getUser()
             console.log(email)
             setCurrentUser(email)
         }
@@ -49,38 +52,42 @@ function Dashboard() {
         }
 
         try {
+            let imageUrl = null
+            if(imageFile) {
+                setIsUploading(true)
+                imageUrl = await uploadImage(imageFile)
+            }
+
+            // TASK DATA
             const task = {
                 name: taskData.name,
                 description: taskDescription,
-                is_finished: taskData.is_finished
+                is_finished: taskData.is_finished,
+                image_url: imageUrl
             }
 
             if(!currentTaskID) {
                 // IF NEW DATA
-                const response = await addTask(task, supabase)
+                const response = await addTask(task, )
                 if(response) {
                     alert('Task added successfully')
-
-                    getTasks(supabase, setTasks);
                 }
-                
-                setTaskData({ name: "", description: "", is_finished: false })
             } else {
                 // IF UPDATING DATA
-                const response = await updateTask(currentTaskID, task, supabase)
+                const response = await updateTask(currentTaskID, task, )
                 if(response) {
                     alert('Task updated successfully')
-
-                    getTasks(supabase, setTasks);
                 }
-
-                console.log(response)
-                
-                setTaskData({ name: "", description: "", is_finished: false })
             }
+
+            setTaskData({ name: "", description: "", is_finished: false })
+            setImageFile(null)
+            getTasks(setTasks);
         } catch(err) {
             console.error(`Error creating/updating task: ${err.message}`)
             alert(`Failed to create/update task!`)
+        } finally {
+            setIsUploading(false)
         }
     }
 
@@ -99,7 +106,7 @@ function Dashboard() {
             // 3. update yung title ng form
             // 4. update yung state kung "editing" state, IF OO ang task service function call `updatetask()` if not `createtask()`
 
-            let taskResponse = await getTask(taskID, supabase)
+            let taskResponse = await getTask(taskID, )
             if(taskResponse) {
                 setTaskData({name: taskResponse.name, description: taskResponse.description, is_finished: taskResponse.is_finished})
                 setCurrentTaskID(taskID)
@@ -116,11 +123,11 @@ function Dashboard() {
 
     const handleDelete = async (taskID) => {
         try {
-            const response = await deleteTask(taskID, supabase)
+            const response = await deleteTask(taskID, )
             if(response) {
                 alert('Task deleted successfully')
 
-                getTasks(supabase, setTasks);
+                getTasks(setTasks);
             }
             
             setTaskData({ name: "", description: "", is_finished: false })
@@ -132,19 +139,19 @@ function Dashboard() {
 
     const handleClearFields = () => {
         setTaskData({ name: "", description: "", is_finished: false })
+        setImageFile(null)
         setTitle("Add New Task")
     }
 
     const handleSearchClear = async () => {
         setSearchName("")
-        await getTasks(supabase, setTasks);
+        await getTasks(setTasks);
     }
 
     const handleSearchSubmit = async (e) => {
         e.preventDefault()
         try {
-            console.log(searchName + ":" + supabase)
-            const response = await searchTask(searchName, supabase)
+            const response = await searchTask(searchName, )
             console.log(response)
             if(response) {
                 alert('Task(s) searched successfully')
@@ -160,12 +167,12 @@ function Dashboard() {
     }
 
     const handleLogout = async (e) => {
-        logout(supabase)
+        logout()
         navigate('/')
     }
 
     const handleGetSession = async (e) => {
-        const { session } = await getSession(supabase)
+        const { session } = await getSession()
         console.log(session)
         alert(session.access_token)
     }
@@ -186,8 +193,11 @@ function Dashboard() {
                     <label>Task Status</label>
                     <input type="checkbox" id="finished" checked={taskData.is_finished} onChange={handleCheckboxChange}/> <label>Finished</label> <br />
 
-                    <button type="submit">Submit</button>
-                    <button onClick={handleClearFields} className="clear-btn">Clear Fields</button>
+                    <label>Task Image (Nullable)</label>
+                    <input type="file" accept="image/png, image/jpeg" onChange={(e) => setImageFile(e.target.files[0])} /> <br />
+
+                    <button type="submit" disabled={isUploading}>{isUploading ? 'Saving...' : 'Submit'}</button>
+                    <button onClick={handleClearFields} className="clear-btn" disabled={isUploading}>Clear Fields</button>
                 </form>
             </div>
 
@@ -207,12 +217,13 @@ function Dashboard() {
                             <th>Name</th>
                             <th>Description</th>
                             <th>Is Finished</th>
+                            <th>Image</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {tasks.length === 0 ? (
-                                <tr className="tasks-table-empty"><td colSpan={5}>No tasks found. Add one above!</td></tr>
+                                <tr className="tasks-table-empty"><td colSpan={6}>No tasks found. Add one above!</td></tr>
                         ) : (
                             tasks.map((task) => (
                                 <tr key={task.id}>
@@ -220,6 +231,11 @@ function Dashboard() {
                                     <td>{task.name}</td>
                                     <td>{task.description}</td>
                                     <td>{task.is_finished === true ? "FINISHED" : "UNFINISHED"}</td>
+                                    <td>
+                                        <div className="task-image-wrapper">
+                                            <img src={task.image_url} alt="Task attachment" className="task-image" />
+                                        </div>
+                                    </td>
                                     <td>
                                         <div className="table-actions">
                                             <button onClick={() => handleUpdate(task.id)}>Update</button>
