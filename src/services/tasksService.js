@@ -199,14 +199,29 @@ export const uploadImage = async (file) => {
     const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExtension}`
     const filePath = `public/${fileName}`
 
-    const { error, uploadError } = await supabase.storage.from('task-images').upload(filePath, file)
+    const { error } = await supabase.storage.from('task-images').upload(filePath, file)
 
-    if(uploadError) {
-        console.error(`Upload error: ${uploadError}`)
-        throw uploadError
+    if(error) {
+        console.error(`Upload error: ${error}`)
+        throw error
     }
 
-    const { data } = supabase.storage.from('task-images').getPublicUrl(filePath)
+    const { data } = await supabase.storage.from('task-images').getPublicUrl(filePath)
 
     return data.publicUrl
+}
+
+export const deleteImage = async (filePath) => {
+    if(!filePath) return null
+
+    const folderName = "task-images/"
+    const pathIndex = filePath.indexOf(folderName) + folderName.length
+    const finalPath = filePath.substring(pathIndex)
+
+    const { error } = await supabase.storage.from('task-images').remove([finalPath])
+
+    if (error) {
+        console.error(error);
+        return;
+    }
 }

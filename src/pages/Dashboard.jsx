@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { createClient } from "@supabase/supabase-js";
 import {
     getTasks,
@@ -11,7 +11,8 @@ import {
     logout,
     getSession,
     getUser,
-    uploadImage
+    uploadImage,
+    deleteImage
 } from "../services/tasksService";
 import { useNavigate } from "react-router-dom";
 
@@ -20,7 +21,7 @@ import { supabase } from "../services/supabase";
 
 function Dashboard() {
     const [tasks, setTasks] = useState([]);
-    const [taskData, setTaskData] = useState({ name: "", description: "", is_finished: false })
+    const [taskData, setTaskData] = useState({ name: "", description: "", is_finished: false, image_url: null })
 
     const [title, setTitle] = useState("Add New Task")
     const [currentTaskID, setCurrentTaskID] = useState(null)
@@ -28,6 +29,7 @@ function Dashboard() {
     const [currentUser, setCurrentUser] = useState(null)
     const [imageFile, setImageFile] = useState(null)
     const [isUploading, setIsUploading] = useState(false)
+    const fileInputRef = useRef(null)
 
     const navigate = useNavigate()
 
@@ -68,21 +70,25 @@ function Dashboard() {
 
             if(!currentTaskID) {
                 // IF NEW DATA
-                const response = await addTask(task, )
+                const response = await addTask(task)
                 if(response) {
                     alert('Task added successfully')
                 }
             } else {
                 // IF UPDATING DATA
-                const response = await updateTask(currentTaskID, task, )
+                const response = await updateTask(currentTaskID, task)
+                const deleteImageResponse = await deleteImage(taskData.image_url)
                 if(response) {
                     alert('Task updated successfully')
                 }
             }
 
-            setTaskData({ name: "", description: "", is_finished: false })
+            setTaskData({ name: "", description: "", is_finished: false, image_url: null })
             setImageFile(null)
-            getTasks(setTasks);
+            getTasks(setTasks)
+            if(fileInputRef.current) {
+                fileInputRef.current.value = ''
+            }
         } catch(err) {
             console.error(`Error creating/updating task: ${err.message}`)
             alert(`Failed to create/update task!`)
@@ -105,10 +111,12 @@ function Dashboard() {
             // 2. ilapat yung existing task sa fields ng form
             // 3. update yung title ng form
             // 4. update yung state kung "editing" state, IF OO ang task service function call `updatetask()` if not `createtask()`
-
-            let taskResponse = await getTask(taskID, )
+            if(fileInputRef.current) {
+                fileInputRef.current.value = ''
+            }
+            let taskResponse = await getTask(taskID)
             if(taskResponse) {
-                setTaskData({name: taskResponse.name, description: taskResponse.description, is_finished: taskResponse.is_finished})
+                setTaskData({name: taskResponse.name, description: taskResponse.description, is_finished: taskResponse.is_finished, image_url: taskResponse.image_url})
                 setCurrentTaskID(taskID)
                 setTitle("Update Task")
             } else {
@@ -123,7 +131,7 @@ function Dashboard() {
 
     const handleDelete = async (taskID) => {
         try {
-            const response = await deleteTask(taskID, )
+            const response = await deleteTask(taskID)
             if(response) {
                 alert('Task deleted successfully')
 
@@ -138,9 +146,12 @@ function Dashboard() {
     }
 
     const handleClearFields = () => {
-        setTaskData({ name: "", description: "", is_finished: false })
+        setTaskData({ name: "", description: "", is_finished: false, image_url: null })
         setImageFile(null)
         setTitle("Add New Task")
+        if(fileInputRef.current) {
+            fileInputRef.current.value = ''
+        }
     }
 
     const handleSearchClear = async () => {
@@ -151,7 +162,7 @@ function Dashboard() {
     const handleSearchSubmit = async (e) => {
         e.preventDefault()
         try {
-            const response = await searchTask(searchName, )
+            const response = await searchTask(searchName)
             console.log(response)
             if(response) {
                 alert('Task(s) searched successfully')
@@ -194,7 +205,7 @@ function Dashboard() {
                     <input type="checkbox" id="finished" checked={taskData.is_finished} onChange={handleCheckboxChange}/> <label>Finished</label> <br />
 
                     <label>Task Image (Nullable)</label>
-                    <input type="file" accept="image/png, image/jpeg" onChange={(e) => setImageFile(e.target.files[0])} /> <br />
+                    <input type="file" accept="image/png, image/jpeg" onChange={(e) => setImageFile(e.target.files[0])} ref={fileInputRef} /> <br />
 
                     <button type="submit" disabled={isUploading}>{isUploading ? 'Saving...' : 'Submit'}</button>
                     <button onClick={handleClearFields} className="clear-btn" disabled={isUploading}>Clear Fields</button>
