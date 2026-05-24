@@ -43,6 +43,19 @@ function Dashboard() {
         }
 
         initialize()
+
+        const taskListener = supabase.channel('task-connection').on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'tasks' },
+            (payload) => {
+                console.log('Realtime change received!', payload)
+                getTasks(setTasks)
+            }
+        ).subscribe()
+
+        return () => {
+            supabase.removeChannel(taskListener)
+        }
     }, []);
 
     const handleSubmit = async (e) => {
