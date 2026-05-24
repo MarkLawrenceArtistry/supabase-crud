@@ -192,7 +192,7 @@ function Dashboard() {
     return (
         <div className="content">
             <div>
-                <h1>Hello, {currentUser} Welcome!</h1>
+                <h1>Hello, {currentUser} Welcome! Today is {Date.now()}</h1>
                 <h3>{title}</h3>
                 <form onSubmit={handleSubmit}>
                     <label>Task Name</label>
