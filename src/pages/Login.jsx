@@ -34,7 +34,7 @@ export default function Login() {
                         <p>Log in your credentials to access the system.</p>
                     </div>
                     <div className="login-form-body">
-                        <input type="text" placeholder="Email.." value={credentials.email} onChange={(e) => setCredentials({...credentials, email: e.target.value})} required />
+                        <input type="email" placeholder="Email.." value={credentials.email} onChange={(e) => setCredentials({...credentials, email: e.target.value})} required />
                         <input type="password" placeholder="Password.." value={credentials.password} onChange={(e) => setCredentials({...credentials, password: e.target.value})} required />
                     </div>
                     <button type="submit">Login</button>
